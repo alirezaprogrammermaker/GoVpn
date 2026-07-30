@@ -51,6 +51,11 @@ desktop.ini
 .zcode/
 
 # ========================
+# Apps Script / Clasp
+# ========================
+.clasp.json
+
+# ========================
 # Environment / Secrets
 # ========================
 .env
