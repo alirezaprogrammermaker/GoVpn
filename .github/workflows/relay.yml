@@ -38,13 +38,13 @@ concurrency:
   group: relay-runner
   cancel-in-progress: true
 
-# Maximum 6 hours (GitHub Actions limit for public repos)
-timeout-minutes: 360
-
 jobs:
   relay:
     name: "🚀 Relay Runner"
     runs-on: ubuntu-latest
+
+    # Maximum 6 hours (GitHub Actions limit for public repos)
+    timeout-minutes: 360
 
     # Grant permissions for the workflow
     permissions:
