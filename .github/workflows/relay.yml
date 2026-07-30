@@ -83,7 +83,7 @@ jobs:
             -relay "${{ env.RELAY_URL }}" \
             -id "gh-${{ github.run_id }}-${{ github.run_number }}" \
             -max-runtime "${{ github.event.inputs.max_runtime || '5h50m' }}" \
-            -poll-delay "${{ github.event.inputs.poll_delay || '5s'}"
+            -poll-delay "${{ github.event.inputs.poll_delay || '5s' }}"
 
       # ─── Summary (always runs) ───
       - name: "📊 Summary"
