@@ -1,0 +1,103 @@
+# ═══════════════════════════════════════════════════════════════
+#  GoVpn GitHub Actions Relay Runner
+#
+#  This workflow runs a Go program that polls a Cloudflare Worker
+#  relay for pending HTTP requests, executes them, and returns
+#  responses. This creates a free, temporary proxy relay using
+#  GitHub Actions runners (Azure IPs - hard to block).
+#
+#  Triggers:
+#    - Manual dispatch (workflow_dispatch)
+#    - Scheduled every 6 hours (optional - uncomment below)
+# ═══════════════════════════════════════════════════════════════
+
+name: "GoVpn Relay Runner"
+
+on:
+  workflow_dispatch:
+    inputs:
+      relay_url:
+        description: "CF Worker Relay URL"
+        required: false
+        default: "https://govpn-relay.social-panel.workers.dev"
+      max_runtime:
+        description: "Max runtime (Go duration, e.g., 5h50m)"
+        required: false
+        default: "5h50m"
+      poll_delay:
+        description: "Poll delay (Go duration, e.g., 500ms)"
+        required: false
+        default: "500ms"
+
+  # Uncomment to run on a schedule (every 6 hours):
+  # schedule:
+  #   - cron: "0 */6 * * *"
+
+# Ensure only one relay instance runs at a time
+concurrency:
+  group: relay-runner
+  cancel-in-progress: true
+
+# Maximum 6 hours (GitHub Actions limit for public repos)
+timeout-minutes: 360
+
+jobs:
+  relay:
+    name: "🚀 Relay Runner"
+    runs-on: ubuntu-latest
+
+    # Grant permissions for the workflow
+    permissions:
+      contents: read
+
+    steps:
+      # ─── Checkout code ───
+      - name: "📥 Checkout"
+        uses: actions/checkout@v4
+
+      # ─── Setup Go ───
+      - name: "🔧 Setup Go"
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache: true
+          cache-dependency-path: runner/go.sum
+
+      # ─── Run the relay runner ───
+      - name: "🏃 Run Relay"
+        working-directory: runner
+        env:
+          RELAY_URL: ${{ github.event.inputs.relay_url || 'https://govpn-relay.social-panel.workers.dev' }}
+          RUNNER_ID: "gh-${{ github.run_id }}-${{ github.run_number }}"
+        run: |
+          echo "╔══════════════════════════════════════════════════════════════╗"
+          echo "║           GoVpn GitHub Actions Relay                        ║"
+          echo "╠══════════════════════════════════════════════════════════════╣"
+          echo "║  Run ID:      ${{ github.run_id }}"
+          echo "║  Run Number:  ${{ github.run_number }}"
+          echo "║  Runner:      ${{ runner.name }}"
+          echo "║  OS:          ${{ runner.os }}"
+          echo "║  Arch:        ${{ runner.arch }}"
+          echo "║  Relay URL:   ${{ env.RELAY_URL }}"
+          echo "╚══════════════════════════════════════════════════════════════╝"
+
+          go run main.go \
+            -relay "${{ env.RELAY_URL }}" \
+            -id "gh-${{ github.run_id }}-${{ github.run_number }}" \
+            -max-runtime "${{ github.event.inputs.max_runtime || '5h50m' }}" \
+            -poll-delay "${{ github.event.inputs.poll_delay || '500ms' }}"
+
+      # ─── Summary (always runs) ───
+      - name: "📊 Summary"
+        if: always()
+        run: |
+          echo "## 🏃 Relay Runner Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Run ID | \`${{ github.run_id }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Status | ${{ job.status }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Runner | ${{ runner.name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| OS | ${{ runner.os }} (${{ runner.arch }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Relay | \`${{ env.RELAY_URL }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Started | ${{ github.event.pull_request.created_at || github.event.head_commit.timestamp }} |" >> $GITHUB_STEP_SUMMARY

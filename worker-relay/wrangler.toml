@@ -1,0 +1,8 @@
+name = "govpn-relay"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+# KV namespace for request queue (works on free plan)
+[[kv_namespaces]]
+binding = "QUEUE"
+id = "21afd9ca5cfc4a0cbfbdecf52299fe3b"
