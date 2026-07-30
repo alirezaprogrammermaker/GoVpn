@@ -1,0 +1,65 @@
+# ========================
+# Go
+# ========================
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output of go coverage
+*.out
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Dependency directories
+vendor/
+
+# ========================
+# Cloudflare Workers
+# ========================
+.wrangler/
+.dev.vars
+node_modules/
+dist/
+
+# ========================
+# IDE / Editor
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ========================
+# OS
+# ========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========================
+# ZCode
+# ========================
+.zcode/
+
+# ========================
+# Environment / Secrets
+# ========================
+.env
+.env.*
+*.key
+*.pem
+
+# ========================
+# Logs
+# ========================
+*.log
+logs/
